@@ -1,6 +1,8 @@
 import streamlit as st
+from shared.ui import inject_custom_css, render_hero
 
 st.set_page_config(page_title="IEEE Paper Constructor", layout="wide")
+inject_custom_css()
 
 from constructor.github_loader import parse_repo, fetch_repo, _check_rate_limit, _headers
 from constructor.vectorstore import build_vectorstore
@@ -8,7 +10,11 @@ from constructor.analysis import analyze_repository
 from constructor.paper_generator import generate_paper
 from constructor.pdf_builder import build_pdf
 
-st.title("IEEE Research Paper Constructor")
+render_hero(
+    "IEEE Research Paper Constructor",
+    "Convert a GitHub repository into a structured IEEE-style draft paper.",
+    chips=["GitHub Analysis", "Auto Draft", "PDF Export"],
+)
 
 # Show GitHub API rate limit status in sidebar
 with st.sidebar:
@@ -31,11 +37,17 @@ if "author" not in st.session_state:
 if "institution" not in st.session_state:
     st.session_state.institution = ""
 
-with st.form("constructor_form"):
-    repo_url = st.text_input("GitHub Repository URL")
-    author = st.text_input("Author Name")
-    institution = st.text_input("Institution")
-    submit = st.form_submit_button("Generate Paper")
+with st.container():
+    st.markdown('<div class="app-card">', unsafe_allow_html=True)
+    with st.form("constructor_form"):
+        repo_url = st.text_input("GitHub Repository URL", placeholder="https://github.com/owner/repository")
+        col1, col2 = st.columns(2)
+        with col1:
+            author = st.text_input("Author Name", placeholder="John Doe")
+        with col2:
+            institution = st.text_input("Institution", placeholder="Your University / Organization")
+        submit = st.form_submit_button("Generate Paper")
+    st.markdown("</div>", unsafe_allow_html=True)
 
 if submit:
     st.session_state.author = author

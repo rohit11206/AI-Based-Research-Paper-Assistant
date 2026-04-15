@@ -1,0 +1,59 @@
+# --- Secrets / environment ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+
+# --- Python cache / compiled ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+
+# --- Virtual environments ---
+venv/
+.venv/
+env/
+ENV/
+
+# --- Build / packaging ---
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# --- Tool caches ---
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+
+# --- Streamlit / local app state ---
+.streamlit/
+.streamlit/secrets.toml
+!.streamlit/config.toml
+
+# --- Local databases / vector stores ---
+*.db
+*.sqlite
+*.sqlite3
+chroma/
+chroma_db/
+vectorstore/
+data/chroma/
+data/*.db
+data/papers.json
+
+# --- OS / editor files ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/

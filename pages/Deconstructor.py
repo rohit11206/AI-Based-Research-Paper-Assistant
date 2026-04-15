@@ -1,7 +1,9 @@
 import streamlit as st
 from dotenv import load_dotenv
+from shared.ui import inject_custom_css, render_hero
 
 st.set_page_config(page_title="Research Paper Deconstructor", layout="wide")
+inject_custom_css()
 
 load_dotenv()
 
@@ -15,7 +17,11 @@ from deconstructor.database import (
     list_sessions,
 )
 
-st.title("Research Paper Deconstructor")
+render_hero(
+    "Research Paper Deconstructor",
+    "Upload PDFs and chat with your research documents with context-aware answers.",
+    chips=["Document Q&A", "Session Memory", "RAG"],
+)
 
 # ---- session state bootstrap (must be first) ----
 if "session_id" not in st.session_state:
@@ -53,11 +59,13 @@ with st.sidebar:
             st.rerun()
 
 # ---- Upload PDFs (once per chat) ----
+st.markdown('<div class="app-card">', unsafe_allow_html=True)
 uploaded_files = st.file_uploader(
     "Upload research papers (PDF)",
     type=["pdf"],
     accept_multiple_files=True,
 )
+st.markdown("</div>", unsafe_allow_html=True)
 
 if uploaded_files:
     from shared.embeddings import get_embeddings
