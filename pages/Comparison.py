@@ -2,14 +2,20 @@ import streamlit as st
 import os
 from langchain_groq import ChatGroq
 import fitz  # PyMuPDF
+from dotenv import load_dotenv
 from shared.ui import inject_custom_css, render_hero
+
+load_dotenv()
 
 # -----------------------------
 # 🔹 Load LLM (Groq)
 # -----------------------------
 def load_llm():
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        raise ValueError("GROQ_API_KEY is missing")
     return ChatGroq(
-        api_key=os.getenv("GROQ_API_KEY"),
+        api_key=api_key,
         model="llama-3.1-8b-instant"
     )
 
@@ -88,33 +94,38 @@ if uploaded_files and len(uploaded_files) < 2:
     st.warning("⚠️ Please upload at least 2 papers")
 
 if uploaded_files and len(uploaded_files) >= 2:
+    if not os.getenv("GROQ_API_KEY"):
+        st.error(
+            "GROQ_API_KEY not found. Add it to your `.env` file, then restart Streamlit."
+        )
+        st.code("GROQ_API_KEY=your_key_here")
 
     if st.button("🚀 Compare Papers"):
+        try:
+            with st.spinner("Processing papers..."):
+                llm = load_llm()
 
-        with st.spinner("Processing papers..."):
+                texts = []
+                summaries = []
 
-            llm = load_llm()
+                # Step 1: Extract text
+                for file in uploaded_files:
+                    text = extract_text_from_pdf(file)
+                    texts.append(text)
 
-            texts = []
-            summaries = []
+                # Step 2: Summarize each paper
+                for i, text in enumerate(texts):
+                    st.write(f"🔹 Summarizing Paper {i+1}...")
+                    summary = summarize_paper(text, llm)
+                    summaries.append(summary)
 
-            # Step 1: Extract text
-            for file in uploaded_files:
-                text = extract_text_from_pdf(file)
-                texts.append(text)
+                # Step 3: Compare
+                st.write("🔍 Comparing papers...")
+                result = compare_papers(summaries, llm)
 
-            # Step 2: Summarize each paper
-            for i, text in enumerate(texts):
-                st.write(f"🔹 Summarizing Paper {i+1}...")
-                summary = summarize_paper(text, llm)
-                summaries.append(summary)
-
-            # Step 3: Compare
-            st.write("🔍 Comparing papers...")
-            result = compare_papers(summaries, llm)
-
-        # Output
-        st.success("✅ Comparison Complete!")
-
-        st.markdown("## 📊 Comparison Result")
-        st.write(result)
+            # Output
+            st.success("✅ Comparison Complete!")
+            st.markdown("## 📊 Comparison Result")
+            st.write(result)
+        except Exception as e:
+            st.error(f"Comparison failed: {str(e)}")
